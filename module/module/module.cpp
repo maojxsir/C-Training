@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <string>
+#include <iostream>
 
 using        namespace   std;
 
@@ -135,6 +136,19 @@ void getmemory1(char *p)
 	strcpy(p,"hello ,world");
 }
 
+//getmemory ok
+char * getmemory10(unsigned int num)
+{
+	char *p;
+	p = (char *) malloc (num);//！！！若num=0，p会申请到合法指针
+	if (NULL == p)
+	{
+		return 0;
+	}
+	strcpy(p,"hello ,world");
+	return p;
+}
+//getmemory ok
 void getmemory2(char **p,int num)
 {
 	*p = (char *) malloc (num);
@@ -218,14 +232,14 @@ struct data
 data_u max;
 
 //操作符优先级测试
-void test()
+void OperationTest()
 {
 	int x0 = 8>6;
 	int x1 = 5+6>1 && 7 <8;
 	int a,b;
-	//int x2 = a>=b || b<a;
+	int x2 = a>=b || b<a;
 	int x3 ='Y'>'S'?10:5;
-	//int x4 = a>b?b<a:a>b;
+	int x4 = a>b?b<a:a>b;
 	int x5 = (a=1)?2:3;
 	int x6 = !!0x12345678;
 	int x7 = 0x12345678 && ~0x1000;
@@ -240,7 +254,8 @@ void test()
 
 }
  
-
+//位域测试
+//输出还有可能是4
 void BitDomin()
 {
 	union 
@@ -257,19 +272,213 @@ void BitDomin()
 	printf("%d\n",v.x.s3); 
 }
 
+#pragma (2)
+
+
+
+
+//	Why?我们在 15 行对 instant2 的修改改变了 instant1 中成员的值！ 
+//	原因在于 13 行的 instant2 = instant1 赋值语句采用的是变量逐个拷贝，这使得 instant1 和
+//	instant2 中的 cMember 指向了同一片内存，因而对 instant2 的修改也是对 instant1 的修改。 
+//	在 C 语言中，当结构体中存在指针型成员时，一定要注意在采用赋值语句时是否将 2 个实例中的
+//	指针型成员指向了同一片内存。 
+struct structA 
+{ 
+	int iMember;	
+	char *cMember; 
+}; 
+
+int structMisstakeNote()
+{ 
+	structA instant1,instant2; 
+	char c = 'a'; 
+	instant1.iMember = 1; 
+	instant1.cMember = &c;  
+	instant2 = instant1;					//!!!instant2 = instant1 赋值语句采用的是变量逐个拷贝，
+	cout << *(instant1.cMember) << endl;	//14 行的输出结果是：a 
+	*(instant2.cMember) = 'b'; 
+	cout << *(instant1.cMember) << endl;	//16 行的输出结果是：b 
+	return 0; 
+} 
+
+
+
+
+
+#define BIT3 (0x1 << 3) 
+/*void set_bit3(unsigned int &dat) 
+{ 
+	dat |= BIT3; 
+}*/ 
+//void set_bit3(unsigned int *dat) 
+//{ 
+//	*dat |= BIT3; 
+//}
+unsigned int set_bit3(unsigned int dat) 
+{ 
+	dat |= BIT3;
+	return dat;
+} 
+void clear_bit3(unsigned int &dat) 
+{ 
+	dat &= ~BIT3; 
+}
+
+
+
+//本例中：在调用Exchg1(a,b)时最开始做的两个隐含动作是：int x=a;int y=b;.及x=a;y=b;
+//原来函数在调用时是隐含地把参数a,b的值分别赋值给了x,y。之后在函数体内一直是对形参x,y进行操作。并没有对a,b进行任何操作。
+//函数只是把a,b的值通过赋值传递将值传递给了x,y。函数里操作的只是x,y的值，并不是a,b的值。这就是所谓的值传递
+void Exchg1(int ax, int by)
+{
+	int tmp;
+	tmp = ax;
+	ax = by;
+	by = tmp;
+	printf("ax = %d, by = %d\n", ax, by);
+}
+
+//本例中：在调用Exchg2(&a,&b)时最开始做的两个隐含动作是：int *px=&a;int *py=&b;.及 px=&a;py=&b;.
+//原来函数在调用时是隐含地把参数a,b的地址分别传递给了指针px,py。
+//之后在函数体内一直是对指针px,py进行操作。也就是对a,b的地址进行的操作。
+void Exchg2(int *pax, int *pby)
+{
+	int tmp = *pax;
+	*pax = *pby;
+	*pby = tmp;
+	printf("*pax = %d, *pby = %d.\n",*pax, *pby);
+}
+
+
+//本例中：与值传递相比，代码上只有只有一处不同，即函数定义处：void Exchg3(int &x, int &y)
+//Exchg3函数的定义处Exchg3(int&x, int &y)。调用时我们可以像值传递（如： Exchg1(a, b); ）一样调用函数（如： Exchg3(a,b);）。
+//但是x、y前都有一个取地址符号“&”。有了这个，调用Exchg3时函数会将a、b 分别代替了x、y了，我们称：x、y分别引用了a、b变量。
+//这样函数里操作的其实就是实参a、b本身了，因此函数的值可在函数里被修改
+void Exchg3(int &ax, int &by)
+{
+	int tmp = ax;
+	ax = by;
+	by = tmp;
+	printf("ax= %d,by = %d\n", ax, by);
+}
+
+//值传递 地址传递 应用传递
+void TestValueTransport()
+{
+	int a = 4,b =6;
+	Exchg1(a, b);//不能交换 值传递
+	Exchg2(&a, &b); //可以交换 地址传递
+	Exchg3(a, b);//可以交换 应用传递
+	printf("a= %d, b = %d\n", a, b);
+
+
+	char *str = NULL;
+	getmemory1(str); //get buffer faile
+	printf("%s/n",str);
+	str  = getmemory10(0);
+
+	getmemory2(&str,100); //地址传递
+	strcpy(str,"hello");
+	free(str);
+	printf("\n str is %s",str);
+
+}
+
+//编写一个函数，作用是把一个 char 组成的字符串循环右移 n 个。比如原来是“abcdefghi”
+//如果 n=2，移位后应该是“hiabcdefgh” 
+//函数头是这样的： 
+//pStr 是指向以'\0'结尾的字符串的指针 
+//steps 是要求移动的 n 
+#define  MAX_LEN	256
+
+//解答： 
+//正确解答 1： 
+void LoopMove ( char *pStr, int steps,long x ) 
+{ 
+	int n = strlen( pStr ) - steps; 
+	char tmp[MAX_LEN];  
+	strcpy ( tmp, pStr + n );  
+	strcpy ( tmp + steps, pStr);  
+	*( tmp + strlen ( pStr ) ) = '\0'; 
+	strcpy( pStr, tmp ); 
+} 
+//正确解答 2： 
+void LoopMove ( char *pStr, int steps ) 
+{ 
+	int n = strlen( pStr ) - steps; 
+	char tmp[MAX_LEN];  
+	memcpy( tmp, pStr + n, steps );  
+	memcpy(pStr + steps, pStr, n );  
+	memcpy(pStr, tmp, steps );  
+} 
+
+/*请写一个 C 函数，若处理器是 Big_endian 的，则返回 0；若是 Little_endian 的，则返回 1 
+解答：*/ 
+int checkCPU() 
+{ 
+	{ 
+		union w 
+		{ 
+			int a; 
+			char b; 
+		} c; 
+		c.a = 1; 
+		return (c.b ==1); 
+	} 
+} 
+//对于一个字节（8bit）的数据，求其中“1”的个数，要求算法的执行效率尽可能地高。
+#define BYTE unsigned char
+void FindTheOne()
+{
+
+	 int i, num = 0; 
+	 BYTE a; 
+	 /* 接收用户输入*/ 
+	 printf("\nPlease Input a BYTE(0~255):"); 
+	 scanf("%d", &a); 
+	 /* 计算1的个数*/ 
+	 for (i = 0; i < 8; i++) 
+	 { 
+		num += (a >> i) &0x01; 
+	 } 
+	 /*或者这样计算1的个数：*/ 
+	 /* for(i=0;i<8;i++) 
+	 { 
+	 if((a>>i)&0x01) 
+	 num++; 
+	 } 
+	76 
+	 */ 
+	 printf("\nthe num of 1 in the BYTE is %d", num); 
+
+}
+
+
+
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	
+	int *pInt = new int[10];
+	if (NULL == pInt)
+	{
+		printf("new buf failed\r\n");
+	}
+	char *pMalloc = (char *) malloc(200);
+	if (NULL == *pMalloc)
+	{
+		printf("malloc buf failed \r\n");
+	}
+	
+	int aaa=3,baa=4,caa=0;
+	caa = aaa+++baa;
 
+	TestValueTransport();
+		
+	unsigned int dataT=0xc0;
+	int x430 = set_bit3(dataT);
+	clear_bit3(dataT);
 
-
-
-	
-	
-	
-	
-	
 	//&a 这个是int (*)[5]类型 &a + 1 移动 20个字节 点到为止
 
 	// printf("%d",sizeof(struct data)+sizeof(max));
@@ -385,13 +594,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	stu.num=99;
 	
 
-	char *str = NULL;
-	getmemory1(str);
-	printf("%s/n",str);
-	getmemory2(&str,100);
-	strcpy(str,"hello");
-	free(str);
-	printf("\n str is %s",str);
+
 
 	
 	
@@ -412,14 +615,14 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 //	char   str[] ="Hello" ;  
-	char    *p =  str ;  
-	int      n = 10;  
-	int x1 = sizeof ( str );
-	int x2 = sizeof ( *p )  ;
-	int x3 = sizeof ( n ) ;
-	
-	printf("%d",strlen(str));
-	printf("%d",strlen(p));
+	//char    *p =  str ;  
+	//int      n = 10;  
+	//int x1 = sizeof ( str );
+	//int x2 = sizeof ( *p )  ;
+	//int x3 = sizeof ( n ) ;
+	//
+	//printf("%d",strlen(str));
+	//printf("%d",strlen(p));
 
 	return 0;
 }
