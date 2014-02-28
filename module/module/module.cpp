@@ -36,6 +36,20 @@ void     ReverseStr( char * str)
 	}     
 } 
 
+//反转字符串
+void ReverseStr2()
+{
+	char* src = "hello,world";
+	int len = strlen(src);
+	char* dest = (char*)malloc(len+1);
+	char* d = dest;
+	char* s = &src[len-1];
+	while( len-- != 0 )
+		*d++=*s--;
+	*d = 0;
+	printf("%s",dest);
+
+}
 
 
 //求素数方法1
@@ -458,6 +472,8 @@ void FindTheOne()
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	
+	ReverseStr2();
 	
 	int *pInt = new int[10];
 	if (NULL == pInt)
