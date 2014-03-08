@@ -10,6 +10,8 @@
 #include <string>
 #include <iostream>
 
+#include "Class.h"
+
 using        namespace   std;
 
 
@@ -472,6 +474,8 @@ void FindTheOne()
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	
+	TestClass();
 	
 	ReverseStr2();
 	
